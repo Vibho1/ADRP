@@ -34,13 +34,33 @@ export class GatewayService {
         const isComplex = this.isComplexQuery(prompt);
 
         if(isComplex){
-            // Route to LangGraph Agent Core (Phase 2)
             console.log('Gateway: Routing to LangGraph Agent (Complex)');
-            return {
-                routedTo: 'Agent Core',
-                message: 'This requires deep research. Sending to LangGraph Agent.',
-                // We will call the Python API here later
-            };
+            
+            try {
+                // Call the Python FastAPI server
+                const agentResponse = await fetch('http://localhost:8000/api/research', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt }) // Pass the user's prompt
+                });
+
+                const agentData = await agentResponse.json();
+
+                // 3a. We can also cache the Agent's expensive research!
+                await this.cacheManager.set(prompt, agentData.data);
+
+                return {
+                    routedTo: 'Agent Core',
+                    message: agentData.data,
+                };
+            } catch (error) {
+                console.error("Error reaching Python Agent:", error);
+
+                return {
+                    routedTo: 'Agent Core',
+                    message: "Error: The Agent Core is offline or unreachable."
+                };
+            }
         }
         else {
             // Route to fast, cheap model
