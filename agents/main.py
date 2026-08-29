@@ -13,17 +13,16 @@ class QueryRequest(BaseModel):
 async def run_research(request: QueryRequest):
     print(f"🚀 Incoming request to Agent Core: {request.prompt}")
 
-    # Create the initial State
-    initial_state = {
-        "messages": [request.prompt],
-        "research_status": "started"
-    }
+    # Hand the prompt to the LangGraph Agent
+    # LangChain expects messages in a tuple format: ("user", "the prompt")
+    
+    result = agent_app.invoke({"messages": [("user", request.prompt)]})
 
-    # Hand the State to the LangGraph Agent
-    result = agent_app.invoke(initial_state)
+    # The result contains a list of complex LangChain message objects. 
+    # We grab the very last message in the list and extract its text content.
+    final_message = result["messages"][-1].content
 
-    # Return the final message produced by the agent back to the user
     return {
         "status": "success",
-        "data": result["messages"][-1]
+        "data": final_message
     }

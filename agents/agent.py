@@ -1,36 +1,28 @@
-from typing import TypedDict, Annotated
-from langgraph.graph import StateGraph, END
-import operator
+import os
+from dotenv import load_dotenv
 
-# 1. Define the State
-class AgentState(TypedDict):
-    # 'operator.add' means whenever we return new messages, they get appended to the list, not overwritten!
-    messages: Annotated[list, operator.add]
-    research_status: str
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langgraph.prebuilt import create_react_agent
 
-# 2. Define a Node
-def research_node(state: AgentState):
-    print(f"🤖 Agent received prompt: {state['messages'][-1]}")
+# Load the environment variables from the parent folder (.env)
+load_dotenv(dotenv_path="../.env")
 
-    # TODO: In Phase 3, this is where we will hook up our LLM and Web Search tools!
-    # For now, we'll pretend we did the research.
-    mock_report = "I have researched the topic thoroughly! This is a highly detailed due diligence report."
+# 1. Initialize the LLM (The Brain)
+llm = ChatGoogleGenerativeAI(
+    model = "gemini-3.6-flash",
+    google_api_key = os.getenv("GEMINI_API_KEY")
+)
 
-    # We return what we want to ADD to the state
-    return {
-        "messages": [mock_report],
-        "research_status": "completed"
-    }
+# 2. Initialize the Web Search Tool (Tavily)
+# Tavily searches the web and returns content specifically formatted for AI
+search_tool = TavilySearchResults(
+    max_results = 3,
+    tavily_api_key = os.getenv("TAVILY_API_KEY")
+)
 
-# 3. Build the Graph
-workflow = StateGraph(AgentState)
+tools = [search_tool]
 
-# Add our node to the graph
-workflow.add_node("researcher", research_node)
-
-# Set the Edges: Start -> Research -> End
-workflow.set_entry_point("researcher")
-workflow.add_edge("researcher", END)
-
-# Compile it into a runnable AI app!
-app = workflow.compile()
+# 3. Create the Agent Graph!
+# 'create_react_agent' automatically builds the StateGraph and Nodes for us!
+app = create_react_agent(llm, tools)
