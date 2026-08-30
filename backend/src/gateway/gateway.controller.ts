@@ -1,4 +1,4 @@
-import { Controller, Post, Body} from '@nestjs/common';
+import { Controller, Post, Body, Get, Query} from '@nestjs/common';
 import { GatewayService } from './gateway.service.js';
 
 @Controller('gateway')
@@ -6,15 +6,14 @@ export class GatewayController {
     constructor(private readonly gatewayService: GatewayService) {}
 
     @Post('prompt')
-    async handlePrompt(@Body('prompt') prompt: string) {
-        console.log(`Received prompt: ${prompt}`);
-        
-        // Pass the prompt to the service to decide where to route it
-        const result = await this.gatewayService.processPrompt(prompt);
+    async handlePrompt(@Body() body: { prompt: string; userEmail: string }) {
+        return this.gatewayService.processPrompt(body.prompt, body.userEmail);
+    }
 
-        return {
-            status: 'success',
-            data: result,
-        };
-    }   
+    // Remember to add @Get and @Query to your imports at the top!
+    @Get('history')
+    async getHistory(@Query('email') email: string) {
+        return this.gatewayService.getHistory(email);
+    }
+
 }
