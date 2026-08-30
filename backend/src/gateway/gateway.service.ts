@@ -93,7 +93,7 @@ export class GatewayService {
 
     // A simple rule-based router to determine complexity
     private isComplexQuery(prompt: string): boolean {
-        const complexKeywords = ['research', 'analyze', 'compare', 'report', 'deep dive'];
+        const complexKeywords = ['research', 'analyze', 'compare', 'report', 'deep dive', 'news', 'weather', 'latest'];
         const lowerPrompt = prompt.toLowerCase();
 
         return complexKeywords.some(keyword => lowerPrompt.includes(keyword));
