@@ -2,6 +2,7 @@ import os
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.tools import tool
 
 load_dotenv(dotenv_path="../.env")
 
@@ -33,7 +34,9 @@ def retrieve_section(index: DocumentIndex, target_title: str):
     return "Section not found."
 
 
-if __name__ == "__main__":
+@tool
+def analyze_document(target_title: str) -> str:
+    """Use this tool to extract specific sections from the Ather Energy Q3 Report."""
     fake_document = """
     Ather Energy Q3 Report.
     Financials: We made a lot of money. Revenue is up 50%.
@@ -46,12 +49,5 @@ if __name__ == "__main__":
     # We pass the document to our structured LLM
     result = structured_llm.invoke(f"Extract the sections from this document: {fake_document}")
 
-    for section in result.sections:
-        print(f"📌 {section.title}: {section.summary}")
-
-    # Let's pretend our Agent decided it needs to read the full text about Risk
-    agent_query = "Risks"
-
-    # We pull the exact content from our structured tree!
-    pulled_content = retrieve_section(result, agent_query)
-    print(f"📖 Pulled Content: {pulled_content}")
+    # 2. Retrieve the specific section
+    return retrieve_section(result, target_title)

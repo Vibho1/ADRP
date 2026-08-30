@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 
 type Message = {
   role: "user" | "assistant";
@@ -92,9 +93,30 @@ export default function Home() {
                       : "bg-neutral-800 text-neutral-200 rounded-bl-none border border-neutral-700"
                   }`}
                 >
-                  <pre className="whitespace-pre-wrap font-sans text-sm md:text-base leading-relaxed">
-                    {msg.content}
-                  </pre>
+                  {msg.role === "user" ? (
+                    <pre className="whitespace-pre-wrap font-sans text-sm md:text-base leading-relaxed">
+                      {msg.content}
+                    </pre>
+                  ) : (
+                    <div className="text-sm md:text-base leading-relaxed break-words">
+                      <ReactMarkdown
+                        components={{
+                          h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-6 mb-3 text-emerald-400" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3 text-emerald-400" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2 text-emerald-400" {...props} />,
+                          p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc list-outside ml-5 mb-4 space-y-1" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-5 mb-4 space-y-1" {...props} />,
+                          li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-bold text-emerald-300" {...props} />,
+                          a: ({node, ...props}) => <a className="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                          hr: ({node, ...props}) => <hr className="border-neutral-700 my-6" {...props} />,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             ))

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from agent import app as agent_app
+from multi_agent import app as agent_app
+
 
 # Initialize the API
 app = FastAPI()
