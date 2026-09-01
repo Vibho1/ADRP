@@ -1,0 +1,4 @@
+models:
+  - type: main
+    engine: google_genai
+    model: gemini-3.5-flash

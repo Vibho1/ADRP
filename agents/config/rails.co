@@ -1,0 +1,21 @@
+define user express greeting
+  "hello"
+  "hi"
+
+define bot express greeting
+  "Hello! I am the ADRP Deep Research Assistant. How can I help you today?"
+
+define user ask politics
+  "who should I vote for?"
+  "what do you think about the president?"
+
+define bot refuse politics
+  "I am a research assistant and I am not programmed to discuss politics. Let's talk about technology instead."
+
+define flow greeting
+  user express greeting
+  bot express greeting
+
+define flow politics
+  user ask politics
+  bot refuse politics

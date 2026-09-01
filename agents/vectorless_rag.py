@@ -17,9 +17,10 @@ class DocumentIndex(BaseModel):
 
 # 2. Initialize the LLM
 llm = ChatGoogleGenerativeAI(
-    model = "gemini-3.6-flash",
+    model = "gemini-3.5-flash",
     google_api_key = os.getenv("GEMINI_API_KEY")
 )
+
 
 # 3. Force the LLM to strictly follow our JSON structure!
 structured_llm = llm.with_structured_output(DocumentIndex)
@@ -36,18 +37,18 @@ def retrieve_section(index: DocumentIndex, target_title: str):
 
 @tool
 def analyze_document(target_title: str) -> str:
-    """Use this tool to extract specific sections from the Ather Energy Q3 Report."""
-    fake_document = """
-    Ather Energy Q3 Report.
-    Financials: We made a lot of money. Revenue is up 50%.
-    Risks: The supply chain for batteries is getting expensive.
-    Future Plans: We are launching a new scooter next year.
-    """
+    """Use this tool to extract specific sections from the internal Nexus AI Pitch Deck."""
+    print("Reading uploaded document...")
+    try:
+        with open("uploaded_document.txt", "r", encoding="utf-8") as f:
+            document_content = f.read()
+    except FileNotFoundError:
+        return "Error: No document was uploaded by the user."
 
     print("Building Vectorless Index...")
 
     # We pass the document to our structured LLM
-    result = structured_llm.invoke(f"Extract the sections from this document: {fake_document}")
+    result = structured_llm.invoke(f"Extract the sections from this document: {document_content}")
 
     # 2. Retrieve the specific section
     return retrieve_section(result, target_title)

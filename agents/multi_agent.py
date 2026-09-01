@@ -17,9 +17,10 @@ load_dotenv(dotenv_path="../.env")
 
 # 1. Initialize the Brain
 llm = ChatGoogleGenerativeAI(
-    model = "gemini-3.6-flash",
-    google_api_key=os.getenv("GEMINI_API_KEY")
+    model = "gemini-3.5-flash",
+    google_api_key = os.getenv("GEMINI_API_KEY")
 )
+
 
 
 # 2. Define the State
@@ -34,7 +35,12 @@ search_tool = TavilySearchResults(
     max_results = 3,
     tavily_api_key = os.getenv("TAVILY_API_KEY")
 )
-researcher_agent = create_react_agent(llm, tools = [search_tool])
+researcher_agent = create_react_agent(
+    llm,
+    tools = [search_tool],
+    prompt = """You are a VC Investigative Researcher. Your job is to search the web for news, competitors, 
+    and market data about startups. Be brutally objective."""
+    )
 
 def researcher_node(state: AgentState):
     print("🤖 Researcher is searching the web...")
@@ -44,7 +50,12 @@ def researcher_node(state: AgentState):
 
 
 # 4. Create Worker 2: The RAG Analyst
-analyst_agent = create_react_agent(llm, tools = [analyze_document])
+analyst_agent = create_react_agent(
+    llm,
+    tools = [analyze_document],
+    prompt="""You are a VC Financial Analyst. 
+    Your job is to read internal pitch decks and extract traction, valuation, and competitor data."""
+    )
 
 def analyst_node(state: AgentState):
     print("🧠 Analyst is reading internal documents...")
@@ -63,9 +74,10 @@ supervisor_chain = llm.with_structured_output(SupervisorDecision)
 def supervisor_node(state: AgentState):
     print("👔 Supervisor is deciding the next step...")
     time.sleep(4) # <-- Take a breath
-    prompt = f"""You are a supervisor managing a research team. Based on the user's request, who should act next? 
-    If the task requires internet search, use the Researcher. If it requires analyzing the Ather Q3 report, use the Analyst. 
-    If fully answered, choose FINISH.\n\nConversation:\n{state['messages']}"""
+    prompt = f"""You are the Lead Partner at a Venture Capital firm managing a due-diligence team. Based on the user's request, who should act next? 
+    If you need web search on competitors, news, or market size, use the Researcher. 
+    If you need to analyze the internal Nexus AI Pitch Deck, use the Analyst. 
+    If you have combined both external news and internal data into a full Investment Memo, choose FINISH.\n\nConversation:\n{state['messages']}"""
     decision = supervisor_chain.invoke(prompt)
     return {"next": decision.next}
     
