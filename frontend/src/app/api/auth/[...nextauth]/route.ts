@@ -10,9 +10,8 @@ export const authOptions: NextAuthOptions ={
   ],
   // MUST explicitly include secret here for Vercel production builds:
   secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/auth/signin", // or your custom signin path if applicable
-  },
+  // Fix: Trust host header so NextAuth accepts Vercel preview URLs dynamically
+  useSecureCookies: process.env.NODE_ENV === "production",
 };
 
 const handler = NextAuth(authOptions);
