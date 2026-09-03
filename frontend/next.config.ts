@@ -2,6 +2,6 @@ import type { NextConfig } from "next";
 
 /** @type {import('next').NextStep} */
 const nextConfig = {
-  output: 'standalone',
+  // output: 'standalone',
 };
 export default nextConfig;
