@@ -52,15 +52,37 @@ export class GatewayService {
                 });
 
                 const agentData = await agentResponse.json();
+                
+                // 1. Log exactly what Python is sending back so you can inspect it
+                console.log("Raw Python Agent Data:", JSON.stringify(agentData, null, 2));
 
-                await this.cacheManager.set(prompt, agentData.data);
+                // 2. Safely extract the text string from the Python response
+                let finalResponseText = "";
+                
+                if (typeof agentData === 'string') {
+                    finalResponseText = agentData;
+                } else if (agentData.response) {
+                    finalResponseText = agentData.response; // Common FastAPI return
+                } else if (agentData.message) {
+                    finalResponseText = agentData.message;
+                } else if (agentData.data) {
+                    // In case it IS data, but it's an object/array, stringify it
+                    finalResponseText = typeof agentData.data === 'string' 
+                        ? agentData.data 
+                        : JSON.stringify(agentData.data);
+                } else {
+                    // Ultimate fallback: Stringify everything so Mongoose NEVER drops it
+                    finalResponseText = JSON.stringify(agentData, null, 2);
+                }
 
-                // 👇 SAVE TO MONGODB!
-                await this.saveChat(prompt, agentData.data, userEmail, chatId);
+                await this.cacheManager.set(prompt, finalResponseText);
+
+                // 👇 SAVE TO MONGODB (This will now successfully save the string!)
+                await this.saveChat(prompt, finalResponseText, userEmail, chatId);
 
                 return {
                     routedTo: 'Agent Core',
-                    message: agentData.data,
+                    message: finalResponseText,
                 };
             } catch (error) {
                 console.error("Error reaching Python Agent:", error);
