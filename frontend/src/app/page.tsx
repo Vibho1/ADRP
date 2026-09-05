@@ -96,17 +96,30 @@ export default function Home() {
 
 
       const data = await res.json();
+
+      // Log the raw response so you can inspect it in your browser's Developer Tools (F12)
+      console.log("Raw Gateway Response:", data);
       
       // 3. Extract the actual text from the response safely
       // Sometimes Gemini returns a raw string, sometimes it returns an array of text blocks
       let assistantText = "";
+      // Safely check all common response structures
       if (typeof data.data?.message === "string") {
         assistantText = data.data.message;
       } else if (Array.isArray(data.data?.message)) {
-        // If it's the array of blocks from the Agent Core
-        assistantText = data.data.message.map((block: any) => block.text).join("\n");
+        assistantText = data.data.message.map((block: any) => block.text || "").join("\n");
+      } else if (typeof data.message === "string") {
+        // Catches { "message": "..." }
+        assistantText = data.message;
+      } else if (typeof data.content === "string") {
+        // Catches { "role": "assistant", "content": "..." }
+        assistantText = data.content;
+      } else if (typeof data === "string") {
+        // Catches raw string responses
+        assistantText = data;
       } else {
-        assistantText = JSON.stringify(data.data, null, 2); // Fallback
+        // Safe fallback: stringify the ENTIRE object so it never returns undefined
+        assistantText = JSON.stringify(data, null, 2);
       }
 
       // 4. Add the assistant's response to the chat
