@@ -20,6 +20,8 @@ export default function Home() {
   const [pastChats, setPastChats] = useState<{ title: string; messages: any[] }[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:3000";
+
 
   const { data: session } = useSession();
 
@@ -36,7 +38,7 @@ export default function Home() {
   useEffect(() => {
     // Only fetch history if we have BOTH an email and a chatId ready
     if (session?.user?.email && chatId) {
-      fetch(`http://localhost:3000/gateway/history?email=${session.user.email}&chatId=${chatId}`)
+      fetch(`${baseUrl}/gateway/history?email=${session.user.email}&chatId=${chatId}`)
         .then((res) => res.json())
         .then((data) => {
           if (data && data.length > 0) {
@@ -58,7 +60,7 @@ export default function Home() {
 
   useEffect(() => {
     if (session?.user?.email) {
-      fetch(`http://localhost:3000/gateway/chats?email=${session.user.email}`)
+      fetch(`${baseUrl}/gateway/chats?email=${session.user.email}`)
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) setPastChats(data);
@@ -87,7 +89,7 @@ export default function Home() {
       if (file) {
         formData.append("file", file);
       }
-      const res = await fetch("http://localhost:3000/gateway/prompt", {
+      const res = await fetch(`${baseUrl}/gateway/prompt`, {
         method: "POST",
         body: formData, // Notice: No Content-Type headers here! The browser handles it automatically.
       });
