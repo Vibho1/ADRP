@@ -45,7 +45,7 @@ export class GatewayService {
             
             try {
                 // Call the Python FastAPI server
-                const agentResponse = await fetch('http://localhost:8000/api/research', {
+                const agentResponse = await fetch('https://adrp-python-agent.onrender.com/api/research', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json'},
                     body: JSON.stringify({ prompt, documentText }) 
